@@ -1,19 +1,17 @@
 # Funções para manipulação de dados e análise
 import pandas as pd
 import numpy as np
-from IPython.display import display
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, roc_curve, precision_recall_curve, roc_auc_score
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from IPython.display import display
 
-
+#=======================================================================================================
 def basic_information(df):
     """Informações básicas do dataset"""
     print(f'Dataset carregado com {df.shape[0]:,} registros e {df.shape[1]:,} colunas')
     print(f'Colunas: {df.columns.tolist()}')
 
-
+#=======================================================================================================
 def data_type(df):
     """Análise dos tipos de dados"""
     tipos = df.dtypes.value_counts()
@@ -38,42 +36,46 @@ def data_type(df):
     
         print(f'{col:30} → {tipo_real}')
 
+#=======================================================================================================
+def show_dataframe_samples(df, n=3):
+    """Mostra amostras do dataframe"""
+    print(f'\n PRIMEIRAS {n} LINHAS:')
+    display(df.head(n))
 
-def dataset_info_table(df):
-    """Tabela com informações do dataset"""
-    tabela = pd.DataFrame({
-        'variavel': df.columns,
-        'tipo': df.dtypes.astype(str),
-        'n_nulos': df.isna().sum(),
-        'Nulos_%': (df.isna().mean() * 100).round(2),
-        'cardinalidade': df.nunique()
-    }).reset_index(drop=True)
+    print(f'\n ÚLTIMAS {n} LINHAS:')
+    display(df.tail(n))
 
-    tabela['tipo'] = tabela['tipo'].replace({
-        'object': 'categorica',
-        'category': 'categorica',
-        'int64': 'numerica',
-        'Int64': 'numerica',
-        'int32': 'numerica',
-        'float64': 'numerica',
-        'datetime64[ns]': 'data'
-    })
-    return tabela
+    print('\n AMOSTRA ALEATÓRIA:')
+    display(df.sample(min(n, len(df))))
 
+#=======================================================================================================
+def analyze_target(df, target_col='FPD'):
+    """Análise da variável target"""
+    print(f'\n📊 ANÁLISE DA VARIÁVEL TARGET: {target_col}')
+    print(f'\nDistribuição:')
+    counts = df[target_col].value_counts()
+    for valor, freq in counts.items():
+        pct = (freq / len(df)) * 100
+        print(f'   {valor}: {freq:,} ({pct:.1f}%)')
+    
+    # Visualização
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    
+    # Countplot
+    df[target_col].value_counts().plot(kind='bar', ax=axes[0])
+    axes[0].set_title(f'Distribuição: {target_col}')
+    axes[0].set_xlabel(target_col)
+    axes[0].set_ylabel('Contagem')
+    
+    # Pie chart
+    df[target_col].value_counts().plot(kind='pie', autopct='%1.1f%%', ax=axes[1])
+    axes[1].set_title(f'Proporção: {target_col}')
+    axes[1].set_ylabel('')
+    
+    plt.tight_layout()
+    plt.show()
 
-def check_duplicates(df):
-    """Verifica duplicatas no dataset"""
-    duplicatas_totais = df.duplicated().sum()
-    print(f'Registros duplicados: {duplicatas_totais:,}')
-
-    if duplicatas_totais > 0:
-        pct_duplicatas = (duplicatas_totais / len(df)) * 100
-        print(f'Percentual de duplicatas: {pct_duplicatas:.2f}%')
-        print('⚠️ Atenção: Há registros duplicados que podem precisar ser removidos\n')
-    else:
-        print('✅ Nenhuma duplicata encontrada')
-
-
+#=======================================================================================================
 def analyze_missing_values(df, plot=True):
     """Analisa valores faltantes"""
     missing = df.isnull().sum()
@@ -110,19 +112,37 @@ def analyze_missing_values(df, plot=True):
 
     return missing_df
 
+#=======================================================================================================
+def check_duplicates(df):
+    """Verifica duplicatas no dataset"""
+    duplicatas_totais = df.duplicated().sum()
+    print(f'Registros duplicados: {duplicatas_totais:,}')
 
-def show_dataframe_samples(df, n=3):
-    """Mostra amostras do dataframe"""
-    print(f'\n PRIMEIRAS {n} LINHAS:')
-    display(df.head(n))
+    if duplicatas_totais > 0:
+        pct_duplicatas = (duplicatas_totais / len(df)) * 100
+        print(f'Percentual de duplicatas: {pct_duplicatas:.2f}%')
+        print('⚠️ Atenção: Há registros duplicados que podem precisar ser removidos\n')
+    else:
+        print('✅ Nenhuma duplicata encontrada')
 
-    print(f'\n ÚLTIMAS {n} LINHAS:')
-    display(df.tail(n))
+#=======================================================================================================
+# gera tabela de metadados do dataset para análise e governança
+def dataset_info_table(df, orderby="PC_nulos", ascending=False):
+    tabela = pd.DataFrame({
+        "Feature": df.columns,
+        "QT_nulos": df.isna().sum(),
+        "PC_nulos": (df.isna().mean() * 100).round(2),
+        "QT_zeros": (df == 0).sum(numeric_only=True),
+        "Cardinalidade": df.nunique(dropna=True),
+        "Tipo_feature": df.dtypes.astype(str),
+    }).reset_index(drop=True)
 
-    print('\n AMOSTRA ALEATÓRIA:')
-    display(df.sample(min(n, len(df))))
+    if orderby is not None:
+        tabela = tabela.sort_values(by=orderby, ascending=ascending).reset_index(drop=True)
 
+    return tabela
 
+#=======================================================================================================
 def analyze_categorical_features(df, max_unique=20):
     """Análise de variáveis categóricas"""
     categoricas = df.select_dtypes(include=['object']).columns
@@ -144,71 +164,19 @@ def analyze_categorical_features(df, max_unique=20):
         else:
             print(f'   ⚠️ Muitos valores únicos ({unique_count:,}) - variável de alta cardinalidade')
 
-
-def analyze_target(df, target_col='FPD'):
-    """Análise da variável target"""
-    print(f'\n📊 ANÁLISE DA VARIÁVEL TARGET: {target_col}')
-    print(f'\nDistribuição:')
-    counts = df[target_col].value_counts()
-    for valor, freq in counts.items():
-        pct = (freq / len(df)) * 100
-        print(f'   {valor}: {freq:,} ({pct:.1f}%)')
-    
-    # Visualização
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-    
-    # Countplot
-    df[target_col].value_counts().plot(kind='bar', ax=axes[0])
-    axes[0].set_title(f'Distribuição: {target_col}')
-    axes[0].set_xlabel(target_col)
-    axes[0].set_ylabel('Contagem')
-    
-    # Pie chart
-    df[target_col].value_counts().plot(kind='pie', autopct='%1.1f%%', ax=axes[1])
-    axes[1].set_title(f'Proporção: {target_col}')
-    axes[1].set_ylabel('')
-    
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_numerical_distributions(df, numerical_cols=None, n_cols=3):
-    """Plota distribuições de variáveis numéricas"""
-    if numerical_cols is None:
-        numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    
-    # Limitar a 20 variáveis para não sobrecarregar
-    numerical_cols = numerical_cols[:20]
-    
-    n_vars = len(numerical_cols)
-    n_rows = (n_vars + n_cols - 1) // n_cols
-    
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 4*n_rows))
-    axes = axes.flatten() if n_vars > 1 else [axes]
-    
-    for i, col in enumerate(numerical_cols):
-        axes[i].hist(df[col].dropna(), bins=50, edgecolor='black')
-        axes[i].set_title(f'{col}')
-        axes[i].set_xlabel('Valor')
-        axes[i].set_ylabel('Frequência')
-    
-    # Remover subplots vazios
-    for i in range(n_vars, len(axes)):
-        fig.delaxes(axes[i])
-    
-    plt.tight_layout()
-    plt.show()
-
-# preenche nulos com media ou mediana conforme parametro
+#=======================================================================================================
+# Imputar nulos e registrar estatísticas para produção
 def custom_fillna(df, strategy='median'):
     numerical_cols = df.select_dtypes(
         include=['float64', 'float32', 'int64', 'int32']
-    ).columns
-    categorical_cols = df.select_dtypes(include=['object']).columns
+    ).columns.tolist()
+
+    categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
 
     stats = {
         'numerical': {},
-        'categorical_fill': 'Desconhecido'
+        'categorical_fill': 'Desconhecido',
+        'categorical_cols': categorical_cols
     }
 
     for col in numerical_cols:
@@ -220,7 +188,6 @@ def custom_fillna(df, strategy='median'):
     df[categorical_cols] = df[categorical_cols].fillna(stats['categorical_fill'])
 
     return df, stats
-
 
 
 print("Funções básicas carregadas com sucesso")

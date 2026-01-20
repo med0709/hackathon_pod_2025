@@ -2,13 +2,6 @@ pandas
 numpy
 matplotlib
 seaborn
-scikit-learn
-pycaret
-imbalanced-learn
-xgboost
-lightgbm
-catboost
-ipykernel
-jupyter
 pyarrow
-fastparquet
+scikit-learn
+statsmodels
