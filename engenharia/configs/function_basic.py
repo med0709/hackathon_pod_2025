@@ -5,6 +5,8 @@ import numpy as np
 import datetime as dt
 from datetime import timedelta
 from typing import List
+from itertools import combinations
+
 
 ####################################
 ### Inicio do script de funcoes  ###
@@ -184,3 +186,49 @@ def criar_flag_com_nome_do_valor(
         df = df.drop(columns=colunas)
 
     return df
+
+
+def find_duplicate_columns(df: pd.DataFrame):
+    """
+    Encontra colunas que são exatamente iguais (mesmos valores linha a linha).
+    
+    Retorna uma lista de tuplas:
+    [(coluna_1, coluna_2), ...]
+    """
+    duplicated = []
+
+    for col1, col2 in combinations(df.columns, 2):
+        # equals trata NaN == NaN corretamente
+        if df[col1].equals(df[col2]):
+            duplicated.append((col1, col2))
+
+    return duplicated
+
+def convert_var_columns_to_numeric(
+    df: pd.DataFrame,
+    prefix: str = "var_",
+    errors: str = "coerce",
+    inplace: bool = False
+):
+    """
+    Converte todas as colunas que começam com `prefix` para tipo numérico.
+
+    Parâmetros:
+    - df: DataFrame pandas
+    - prefix: prefixo das colunas (default 'var_')
+    - errors: comportamento do pandas.to_numeric ('coerce', 'ignore', 'raise')
+    - inplace: se True, altera o df original
+
+    Retorna:
+    - DataFrame com colunas convertidas (ou None se inplace=True)
+    """
+    target_cols = [col for col in df.columns if col.startswith(prefix)]
+
+    if not inplace:
+        df = df.copy()
+
+    for col in target_cols:
+        df[col] = pd.to_numeric(df[col], errors=errors)
+
+    return df if not inplace else None
+
