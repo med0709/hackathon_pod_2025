@@ -1,0 +1,29 @@
+[33m27a59f3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/23-book-02[m[33m, [m[1;31morigin/feature/23-book-02[m[33m)[m created book_02.ipynb
+[33m5bccd75[m[33m ([m[1;31morigin/feature/21-book-01[m[33m, [m[1;32mfeature/21-book-01[m[33m, [m[1;32mdevelop[m[33m)[m created notebook book_variaveis_01 and book_variaveis_01.csv
+[33m312fbfb[m[33m ([m[1;31morigin/develop[m[33m)[m Organize project structure following data science standard
+[33m1acbe16[m Merge feature/ciencia_dados into develop
+[33mce9532e[m Merge feature/20-Base-Telco into develop
+[33m4a1a522[m Merge feature/17-Base-Atraso into develop (kept Silver_Base_Pagamentos)
+[33m40a0e21[m Merge feature/16-Base-Pagamento into develop
+[33mcddaadd[m Merge feature/13-Base-Dados-Bureau-Movel-Analise-Inicial into develop
+[33macc6c61[m Merge feature/12-analise-inicial-base-telco into develop
+[33m7068642[m[33m ([m[1;31morigin/feature/13-Base-Dados-Bureau-Movel-Analise-Inicial[m[33m)[m Matando o diretorio dabase dessa feature
+[33m735bc4d[m[33m ([m[1;31morigin/feature/20-Base-Telco[m[33m)[m Adicionando a feature de base Telco
+[33m3e50819[m[33m ([m[1;31morigin/feature/17-Base-Atraso[m[33m)[m Adicionando o arquivo trusted
+[33mff55d68[m[33m ([m[1;31morigin/feature/16-Base-Pagamento[m[33m)[m Adicionando a base trusted de pagamentos
+[33me727d36[m Padronizando os campos Datas
+[33m4063172[m Adicionando feature de ciencia
+[33ma1107b7[m Adicionando a Siver de Atraso
+[33mb0ad525[m[33m ([m[1;32mfeature/13-Base-Dados-Bureau-Movel-Analise-Inicial[m[33m)[m created database base_tabelao.parquet
+[33m29c2d5c[m Subindo a feature Silver book de pagamentos
+[33md073bb7[m[33m ([m[1;31morigin/feature/11-analise-inicial-dados-cadatrais[m[33m)[m Notebook para  subir o serviço na AWS
+[33m22c505a[m created notebook to analyse raw data from bureau movel score
+[33md915c34[m subindo a feature de analise dos dados bureau
+[33m8a8c270[m Criacao Notebook dados_cadastrais
+[33m5ffb34f[m Add files via upload
+[33me7721ca[m[33m ([m[1;31morigin/feature/12-analise-inicial-base-telco[m[33m, [m[1;32mfeature/12-analise-inicial-base-telco[m[33m)[m created notebook silver_base_telco_ipynb
+[33m99c2db8[m created notebook camada_raw_base_telco.ipynb
+[33m4bf55c4[m[33m ([m[1;32mfeature/11-analise-inicial-dados-cadatrais[m[33m)[m first commit
+[33m8ee2bba[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m raw data base_score_bureau_movel updated
+[33m712d117[m raw data base_dados_cadastrais updated
+[33m3a10c8d[m[33m ([m[1;31morigin/homolog[m[33m)[m Initial commit
