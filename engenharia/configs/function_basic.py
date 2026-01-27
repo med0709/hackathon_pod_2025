@@ -6,6 +6,7 @@ import datetime as dt
 from datetime import timedelta
 from typing import List
 from itertools import combinations
+from typing import List
 
 
 ####################################
@@ -241,3 +242,55 @@ def convert_var_columns_to_numeric(
 
     return df if not inplace else None
 
+def criar_coluna_safra(df: pd.DataFrame, coluna_datetime: str) -> pd.DataFrame:
+    """
+    Cria a coluna SAFRA no formato YYYYMM a partir de uma coluna datetime
+    ou string no padrão 09OCT2023:00:00:00
+    """
+
+    df[coluna_datetime] = pd.to_datetime(
+        df[coluna_datetime],
+        format='%d%b%Y:%H:%M:%S',
+        errors='coerce'
+    )
+
+    df['SAFRA'] = df[coluna_datetime].dt.strftime('%Y%m')
+
+    return df
+
+
+def criar_lags_por_safra(
+    df: pd.DataFrame,
+    col_cpf: str,
+    col_safra: str,
+    variaveis: List[str],
+    janelas: List[int]
+) -> pd.DataFrame:
+    """
+    Cria lags e acumulados temporais por CPF e SAFRA.
+
+    Exemplo de janelas: [1, 3, 6]
+    """
+
+    df = df.copy()
+
+    df[col_safra] = df[col_safra].astype(int)
+    df = df.sort_values([col_cpf, col_safra])
+
+    max_lag = max(janelas)
+
+    for var in variaveis:
+        # cria lags individuais até o máximo necessário
+        for i in range(1, max_lag + 1):
+            df[f'{var}_LAG_{i}'] = (
+                df.groupby(col_cpf)[var].shift(i)
+            )
+
+        # cria acumulados para cada janela solicitada
+        for janela in janelas:
+            df[f'{var}_ULT_{janela}_SAFRAS'] = (
+                df[[f'{var}_LAG_{i}' for i in range(1, janela + 1)]]
+                .sum(axis=1)
+            )
+
+    return df
