@@ -146,9 +146,18 @@ def mapear_regiao_subregiao_texto(df: pd.DataFrame, coluna_cep3: str) -> pd.Data
 
     cep3 = df[coluna_cep3].astype(str).str.zfill(3)
 
+    # validação: apenas valores totalmente numéricos
+    cep3_valido = cep3.str.isdigit()
+
     df['REGIAO_POSTAL'] = cep3.str[0]
     df['SUB_REGIAO_POSTAL'] = cep3.str[:2]
     df['REGIAO_POSTAL_TXT'] = df['REGIAO_POSTAL'].map(mapa_regiao)
+
+    # qualquer valor não numérico vira Desconhecido
+    df.loc[~cep3_valido, ['REGIAO_POSTAL', 'SUB_REGIAO_POSTAL', 'REGIAO_POSTAL_TXT']] = 'Desconhecido'
+
+    # fallback extra caso o dígito seja numérico mas não esteja no mapa
+    df['REGIAO_POSTAL_TXT'] = df['REGIAO_POSTAL_TXT'].fillna('Desconhecido')
 
     return df
 
