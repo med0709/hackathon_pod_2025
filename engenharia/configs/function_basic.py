@@ -267,7 +267,8 @@ def criar_lags_por_safra(
     janelas: List[int]
 ) -> pd.DataFrame:
     """
-    Cria lags e acumulados temporais por CPF e SAFRA.
+    Cria apenas acumulados temporais por CPF e SAFRA.
+    Os lags individuais são criados temporariamente e depois removidos.
 
     Exemplo de janelas: [1, 3, 6]
     """
@@ -280,11 +281,12 @@ def criar_lags_por_safra(
     max_lag = max(janelas)
 
     for var in variaveis:
-        # cria lags individuais até o máximo necessário
+        # cria lags individuais temporários
+        lags_temporarios = []
         for i in range(1, max_lag + 1):
-            df[f'{var}_LAG_{i}'] = (
-                df.groupby(col_cpf)[var].shift(i)
-            )
+            col_lag = f'{var}_LAG_{i}'
+            df[col_lag] = df.groupby(col_cpf)[var].shift(i)
+            lags_temporarios.append(col_lag)
 
         # cria acumulados para cada janela solicitada
         for janela in janelas:
@@ -292,5 +294,8 @@ def criar_lags_por_safra(
                 df[[f'{var}_LAG_{i}' for i in range(1, janela + 1)]]
                 .sum(axis=1)
             )
+
+        # remove os lags temporários
+        df.drop(columns=lags_temporarios, inplace=True)
 
     return df
