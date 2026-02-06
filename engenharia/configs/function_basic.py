@@ -6,7 +6,7 @@ import datetime as dt
 from datetime import timedelta
 from typing import List
 from itertools import combinations
-from typing import List
+import re
 
 
 ####################################
@@ -133,16 +133,16 @@ def mapear_regiao_subregiao_texto(df: pd.DataFrame, coluna_cep3: str) -> pd.Data
     """
 
     mapa_regiao = {
-        '0': 'Grande São Paulo',
-        '1': 'Interior de São Paulo',
-        '2': 'Rio de Janeiro e Espírito Santo',
-        '3': 'Minas Gerais',
-        '4': 'Bahia e Sergipe',
-        '5': 'Nordeste Oriental (PE, AL, PB, RN)',
-        '6': 'Nordeste Setentrional (CE, PI, MA)',
+        '0': 'SP - Capital e Grande SP',
+        '1': 'SP - Interior',
+        '2': 'RJ e ES',
+        '3': 'MG',
+        '4': 'Nordeste - Bahia/Sergipe',
+        '5': 'Nordeste - Leste',  # PE, AL, PB, RN
+        '6': 'Nordeste - Norte',  # CE, PI, MA
         '7': 'Centro-Oeste e Norte',
-        '8': 'Paraná e Santa Catarina',
-        '9': 'Rio Grande do Sul'
+        '8': 'Sul - PR/SC',
+        '9': 'Sul - RS'
     }
 
     cep3 = df[coluna_cep3].astype(str).str.zfill(3)
@@ -168,34 +168,37 @@ def criar_flag_com_nome_do_valor(
     drop_original: bool = True
 ) -> pd.DataFrame:
     """
-    Para colunas onde o preenchimento indica um perfil:
-    - valor não nulo → 1
-    - valor nulo → 0
-    - nome da nova coluna = valor não nulo encontrado
-    - remove a coluna original
+    - Cria flags booleanas (0/1) usando o PRÓPRIO VALOR como nome da coluna
+    - Suporta múltiplos valores distintos por coluna
+    - Se o mesmo valor aparecer em colunas diferentes, consolida (OR lógico)
+    - NaN → 0
     """
 
+    df = df.copy()
+
     for col in colunas:
-        # obtém o valor não nulo (assumindo perfil único)
         valores = df[col].dropna().unique()
 
         if len(valores) == 0:
-            # nenhuma informação na coluna
             continue
 
-        if len(valores) > 1:
-            raise ValueError(
-                f"A coluna '{col}' possui mais de um valor distinto: {valores}"
+        for v in valores:
+            nome_coluna = str(v)
+
+            if nome_coluna not in df.columns:
+                df[nome_coluna] = 0
+
+            # OR lógico para não sobrescrever flags existentes
+            df[nome_coluna] = (
+                df[nome_coluna] | (df[col] == v).astype("Int8")
             )
-
-        nome_coluna = str(valores[0])
-
-        df[nome_coluna] = df[col].notna().astype("Int8")
 
     if drop_original:
         df = df.drop(columns=colunas)
 
     return df
+
+
 
 
 def find_duplicate_columns(df: pd.DataFrame):
@@ -242,21 +245,48 @@ def convert_var_columns_to_numeric(
 
     return df if not inplace else None
 
+
 def criar_coluna_safra(df: pd.DataFrame, coluna_datetime: str) -> pd.DataFrame:
-    """
-    Cria a coluna SAFRA no formato YYYYMM a partir de uma coluna datetime
-    ou string no padrão 09OCT2023:00:00:00
-    """
+    df = df.copy()
+
+    # Mapeamento fixo de meses (independente de locale)
+    meses = {
+        'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04',
+        'MAY': '05', 'JUN': '06', 'JUL': '07', 'AUG': '08',
+        'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
+    }
+
+    # Normaliza string: 09OCT2023:00:00:00 → 2023-10-09 00:00:00
+    def normalizar_data(x):
+        if pd.isna(x):
+            return pd.NaT
+
+        x = str(x).upper()
+
+        match = re.match(r'(\d{2})([A-Z]{3})(\d{4}):(\d{2}:\d{2}:\d{2})', x)
+        if not match:
+            return pd.NaT
+
+        dia, mes, ano, hora = match.groups()
+        mes_num = meses.get(mes)
+
+        if not mes_num:
+            return pd.NaT
+
+        return f"{ano}-{mes_num}-{dia} {hora}"
+
+    datas_normalizadas = df[coluna_datetime].apply(normalizar_data)
 
     df[coluna_datetime] = pd.to_datetime(
-        df[coluna_datetime],
-        format='%d%b%Y:%H:%M:%S',
+        datas_normalizadas,
+        format='%Y-%m-%d %H:%M:%S',
         errors='coerce'
     )
 
     df['SAFRA'] = df[coluna_datetime].dt.strftime('%Y%m')
 
     return df
+
 
 
 def criar_lags_por_safra(
