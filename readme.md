@@ -51,13 +51,13 @@ A fim de apoiar decisões mais seguras na migração de clientes do plano pré-p
 hackathon_pod_2025/
 │
 ├── ciencia/
+│   ├── artifact/                # Artefatos intermediários (não versionados)
 │   ├── configs/
 │   ├── notebooks/
 │   │   ├── 01_entendimento_dados.ipynb
 │   │   ├── 02_tratamento_dados.ipynb
 │   │   ├── 03_regra_negocio.ipynb
 │   │   └── 04_baseline_pycaret.ipynb
-│   ├── artifact/                # Artefatos intermediários (não versionados)
 │   ├── data/
 │   │   ├── raw/                 # Dados brutos (NÃO versionados)
 │   │   ├── processed/
@@ -72,7 +72,8 @@ hackathon_pod_2025/
 │   ├── book_02.ipynb
 │   └── book_03.ipynb
 │
-├── data/
+├── data_notebooks/
+│   └── exploratory/
 │   └── processed/
 │       ├── silver-colab/
 │       └── trusted/
