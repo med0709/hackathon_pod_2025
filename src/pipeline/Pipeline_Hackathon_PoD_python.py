@@ -46,15 +46,18 @@ from pyspark.sql.functions import count, avg, to_date
 """
 
 # caminhos dos arquivos
+#Alterar o caminho do PATH_PADRAO para o local onde guardou seus arquivos RAW
+PATH_PADRAO = "/content/gdrive/Othercomputers/Meu laptop/Database_raw"
+#PATH_PADRAO = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025"
 
-PATH_TABELA_BUREAU ="/content/gdrive/MyDrive/Raw Hackathon PoD 2025/base_score_bureau_movel_full"
-PATH_TABELA_CADASTRO = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025/base_dados_cadastrais"
-PATH_BASE_TELCO       = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025/base_telco"
-PATH_BASE_RECARGA     = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025/bases_recarga/BI_FP_ASS_RECARGA_CMV_NOVA"
-PATH_BASE_BOOK_ATRASO = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025/book_atraso/dados_faturamento"
-PATH_BASE_BOOK_PAGAMENTO ="/content/gdrive/MyDrive/Raw Hackathon PoD 2025/book_pagamento/dados_pagamento"
+PATH_TABELA_BUREAU =f"{PATH_PADRAO}/base_score_bureau_movel_full"
+PATH_TABELA_CADASTRO = f"{PATH_PADRAO}/base_dados_cadastrais"
+PATH_BASE_TELCO       = f"{PATH_PADRAO}/base_telco"
+PATH_BASE_RECARGA     = f"{PATH_PADRAO}/bases_recarga/BI_FP_ASS_RECARGA_CMV_NOVA"
+PATH_BASE_BOOK_ATRASO = f"{PATH_PADRAO}/book_atraso/dados_faturamento"
+PATH_BASE_BOOK_PAGAMENTO =f"{PATH_PADRAO}/book_pagamento/dados_pagamento"
 
-BASE_PATH_RECARGA = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025/bases_recarga"
+BASE_PATH_RECARGA = f"{PATH_PADRAO}/bases_recarga"
 
 PATH_DIMENSOES_RECARGA = {
     "CANAL_AQUISICAO": f"{BASE_PATH_RECARGA}/BI_DIM_CANAL_AQUISICAO_CREDITO.csv",
@@ -70,12 +73,9 @@ PATH_DIMENSOES_RECARGA = {
 }
 
 
-PATH_DIMENSOES_BOOK_ATRASO = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025/book_atraso/BI_DIM_TIPO_FATURAMENTO.csv"
+PATH_DIMENSOES_BOOK_ATRASO = f"{PATH_PADRAO}/book_atraso/BI_DIM_TIPO_FATURAMENTO.csv"
 
 # Csvs da tabela recarga
-
-BASE_PATH_RECARGA = "/content/gdrive/MyDrive/Raw Hackathon PoD 2025/bases_recarga"
-
 DIMENSOES_RECARGA = {
     "CANAL_AQUISICAO_CREDITO": "BI_DIM_CANAL_AQUISICAO_CREDITO.csv",
     "FORMA_PAGAMENTO": "BI_DIM_FORMA_PAGAMENTO.csv",
