@@ -69,8 +69,6 @@ df_raw.createOrReplaceTempView("raw_base_telco")
 
 df_trusted = spark.sql(f"""
     SELECT
-        ref,
-        ref_partition,
         '{dthproc}' AS ts_proc,
         '{dthproc}' AS ts_proc_partition,
         CAST(NUM_CPF AS STRING) AS NUM_CPF,
@@ -98,7 +96,7 @@ path_trusted = os.path.join(bucket_trusted, output_trusted)
 #print("Trusted path:", path_trusted)
 
 df_trusted.write \
-    .partitionBy("SAFRA,ref_partition","ts_proc_partition") \
+    .partitionBy("SAFRA","ts_proc_partition") \
     .mode("overwrite") \
     .option("compression", "snappy") \
     .parquet(path_trusted)
@@ -108,13 +106,11 @@ df_trusted.write \
 controle = spark.sql(f"""
     SELECT
         '{output_trusted}' AS name_file,
-        ref,
-        ref_partition,
         ts_proc,
         ts_proc_partition,
         COUNT(*) AS qtd_registros
     FROM lake_base_telco
-    GROUP BY 1,2,3,4,5
+    GROUP BY 1,2,3
 """)
 
 controle.createOrReplaceTempView("controle")

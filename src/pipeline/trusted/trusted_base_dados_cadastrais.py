@@ -21,8 +21,7 @@ spark = SparkSession.builder \
 """# Importando bibliotecas"""
 
 import os
-import sys
-import time
+import pytz
 import datetime
 from datetime import datetime
 

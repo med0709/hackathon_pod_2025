@@ -65,18 +65,30 @@ parquet_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.parque
 df_raw_atraso= spark.read.parquet(*parquet_files, header=True, inferSchema=True)
 df_raw_atraso.createOrReplaceTempView("raw_base_atraso")
 
-csv_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.csv')]
-df_dim_atraso = spark.read.csv(*csv_files, header=True, inferSchema=True, sep=',')
+print(log(), "Registros na Raw:", df_raw_atraso.count())
+df_raw_atraso.show(5, truncate=False)
+#df_raw_atraso.printSchema()
+
+#csv_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.csv')]
+#df_dim_atraso = spark.read.csv(*csv_files, header=True, inferSchema=True, sep=',')
+
+csv_files = os.path.join(path_raw, "BI_DIM_TIPO_FATURAMENTO.csv") 
+df_dim_atraso = spark.read.csv(csv_files, header=True, inferSchema=True, sep=',')
+
 df_dim_atraso.createOrReplaceTempView("df_tipo_faturamento")
+
+print(log(), "Registros na Raw:", df_dim_atraso.count())
+df_dim_atraso.show(5, truncate=False)
 
 #print(log(), "Registros na Raw:", df_raw_atraso.count())
 #df_raw_atraso.show(5, truncate=False)
 
 """# Processamento tipagem para camada Trusted"""
 
-df_trusted_atraso = spark.sql("""
+df_trusted_atraso = spark.sql(f"""
 SELECT
-'{dt_proc}' as ts_proc_partition,
+    '{dthproc}' AS ts_proc,
+    '{dthproc}' AS ts_proc_partition,
     CAST(NUM_CPF AS STRING)                                     AS NUM_CPF,
     TO_DATE(DAT_REFERENCIA, 'ddMMMyyyy:HH:mm:ss')               AS DAT_REFERENCIA,
     CAST(NUM_FATURA_HASH AS STRING)                              AS NUM_FATURA_HASH,
@@ -152,7 +164,7 @@ df_trusted_atraso.cache()
 df_trusted_atraso_refined = spark.sql("""
 SELECT
     at.*,
-    CAST(tf.DS_TIPO_FATURAMENTO AS STRING) AS DS_TIPO_FATURAMENTO,
+    CAST(tf.DW_TIPO_FATURAMENTO AS STRING) AS DW_TIPO_FATURAMENTO,
     CAST(tf.DSC_TIPO_FATURAMENTO AS STRING) AS DSC_TIPO_FATURAMENTO,
     CAST(tf.COD_TIPO_FATURAMENTO AS STRING) AS COD_TIPO_FATURAMENTO,
     TO_DATE(tf.DAT_EXPIRACAO_DW, 'ddMMMyyyy:HH:mm:ss') AS DIM_DAT_EXPIRACAO_DW,                              -- Renaming to avoid conflict
