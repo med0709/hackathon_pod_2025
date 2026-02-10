@@ -140,7 +140,7 @@ df_TIPO_RECARGA           = dfs_dim_recarga["TIPO_RECARGA"]
 
 """# Processamento tipagem para camada Trusted"""
 
-df_base_recarga = spark.sql("""
+df_base_recarga = spark.sql(f"""
     SELECT
         '{dthproc}' AS ts_proc,
         '{dthproc}' AS ts_proc_partition,
@@ -172,7 +172,7 @@ df_base_recarga = spark.sql("""
 """)
 
 df_base_recarga.createOrReplaceTempView("lake_recarga")
-df_base_recarga.cache()
+#df_base_recarga.cache()
 
 #print(log(), "Registros Base:", df_base_recarga.count())
 #df_base_recarga.#printSchema()

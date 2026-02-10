@@ -157,7 +157,7 @@ FROM raw_base_pagamento
 """)
 
 df_trusted_pagamento.createOrReplaceTempView("lake_base_pagamento")
-df_trusted_pagamento.cache()
+#df_trusted_pagamento.cache()
 
 #print(log(), "Registros Trusted:", df_trusted_pagamento.count())
 #df_trusted_pagamento.#printSchema()
@@ -185,7 +185,7 @@ controle = spark.sql (f"""
 """)
 
 controle.createOrReplaceTempView("controle")
-controle.cache()
+#controle.cache()
 
 #print(log(), "Registros controle:", controle.count())
 #controle.show(truncate=False)

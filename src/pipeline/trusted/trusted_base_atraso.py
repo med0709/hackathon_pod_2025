@@ -153,7 +153,7 @@ SELECT
 FROM raw_base_atraso
 """)
 df_trusted_atraso.createOrReplaceTempView("trusted_base_atraso")
-df_trusted_atraso.cache()
+#df_trusted_atraso.cache()
 
 #print(log(), "Registros Trusted:", df_trusted_atraso.count())
 #df_trusted_atraso.#printSchema()
@@ -179,7 +179,7 @@ ON at.dw_tipo_faturamento = tf.dw_tipo_faturamento
 """)
 
 df_trusted_atraso_refined.createOrReplaceTempView("lake_atraso_refined")
-df_trusted_atraso_refined.cache()
+#df_trusted_atraso_refined.cache()
 
 #print(log(), "Registros Trusted:", df_trusted_atraso_refined.count())
 #df_trusted_atraso_refined.#printSchema()

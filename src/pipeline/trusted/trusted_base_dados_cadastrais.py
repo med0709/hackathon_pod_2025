@@ -116,7 +116,7 @@ df_base_dados_cadastrais = spark.sql(f"""
 
 """)
 df_base_dados_cadastrais.createOrReplaceTempView("lake_dados_cadastrais")
-df_base_dados_cadastrais.cache()
+#df_base_dados_cadastrais.cache()
 
 #print(log(), "Registros Trusted:", df_base_dados_cadastrais.count())
 #df_base_dados_cadastrais.printSchema()
@@ -147,7 +147,7 @@ controle = spark.sql(f"""
 """)
 
 controle.createOrReplaceTempView("controle")
-controle.cache()
+#controle.cache()
 
 #print(log(), "Registros controle:", controle.count())
 #controle.show(truncate=False)

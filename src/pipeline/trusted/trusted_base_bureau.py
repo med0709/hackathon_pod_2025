@@ -99,7 +99,7 @@ df_trusted = spark.sql(f"""
 """)
 
 df_trusted.createOrReplaceTempView("lake_base_bureau")
-df_trusted.cache()
+#df_trusted.cache()
 
 #print(log(), "Registros Trusted:", df_trusted.count())
 #df_trusted.printSchema()
@@ -129,7 +129,7 @@ controle = spark.sql(f"""
 """)
 
 controle.createOrReplaceTempView("controle")
-controle.cache()
+#controle.cache()
 
 #print(log(), "Registros controle:", controle.count())
 #controle.show(truncate=False)
