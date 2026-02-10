@@ -200,8 +200,8 @@ documentadas pela **Squad 01**, com foco na ingestão, organização,
 governança e disponibilização dos dados para análises e ciência de dados.
 
 <p align="center">
-  <img src="./assets/arq_proj_v1.png" alt="Arquitetura do Projeto - Hackathon POD 2025" width="900">
-</p>
+  <img src="./assets/Arq_ProjV1.png" alt="Arquitetura do Projeto - Hackathon POD 2025" width="900">
+</p> 
 
 <p align="center">
   <em>Arquitetura de Data Lake e Pipeline Analítico utilizada no Hackathon POD 2025</em>
