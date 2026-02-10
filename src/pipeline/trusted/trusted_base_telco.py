@@ -43,9 +43,9 @@ REF_PERIOD = datetime.now().strftime("%Y%m")
 
 # Buckets e nomes de saída
 bucket_base = "base_telco"
-bucket_trusted = f"s3://hackathon_2025/{PROCESS_DATE}/0003_trusted/{bucket_base}"
-bucket_raw = f"s3://hackathon_2025/{PROCESS_DATE}/0002_raw/{bucket_base}"
-bucket_control = f"s3://hackathon_2025/{PROCESS_DATE}/0005_control/{bucket_base}"
+bucket_trusted = f"s3://hackathon_2025/{PROCESS_DATE}/0003_trusted/"
+bucket_raw = f"s3://hackathon_2025/{PROCESS_DATE}/0002_raw/"
+bucket_control = f"s3://hackathon_2025/{PROCESS_DATE}/0005_control/"
 output_trusted = f"trusted_{bucket_base}"
 
 # Prints para conferência
