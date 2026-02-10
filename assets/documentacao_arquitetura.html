@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Documentação da Arquitetura de Dados</title>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                         Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+        h1, h2, h3 {
+            color: #0d6efd;
+            margin-top: 32px;
+        }
+
+        h1 {
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            border-left: 6px solid #0d6efd;
+            padding-left: 12px;
+        }
+
+        h3 {
+            margin-top: 24px;
+        }
+
+        p {
+            margin: 12px 0;
+        }
+
+        ul {
+            margin: 12px 0 12px 24px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .section {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .raw { background: #e7f1ff; color: #084298; }
+        .trusted { background: #fff3cd; color: #664d03; }
+        .refined { background: #d1e7dd; color: #0f5132; }
+        .control { background: #f8d7da; color: #842029; }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📘 Documentação da Arquitetura de Dados</h1>
+
+<div class="section">
+    <h2>1. Visão Geral da Arquitetura</h2>
+    <p>
+        A arquitetura proposta segue o padrão de <strong>Data Lake em camadas</strong>,
+        implantado em uma <strong>OCI Region</strong>, com o objetivo de suportar análises de dados,
+        modelos de ciência de dados e governança de informações provenientes de múltiplas fontes.
+    </p>
+
+    <p>O fluxo de dados foi desenhado para garantir:</p>
+    <ul>
+        <li>Escalabilidade</li>
+        <li>Qualidade dos dados</li>
+        <li>Rastreabilidade</li>
+        <li>Segurança</li>
+        <li>Separação clara de responsabilidades</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>2. Fontes de Dados</h2>
+    <p>As fontes representam sistemas externos responsáveis pela geração dos dados brutos, como:</p>
+    <ul>
+        <li>Sistemas corporativos (ex: operadora, CRM, billing)</li>
+        <li>Bases transacionais</li>
+        <li>Arquivos estruturados ou semiestruturados</li>
+        <li>Integrações via API ou batch</li>
+    </ul>
+
+    <p>
+        Esses dados são ingeridos sem transformações iniciais, preservando o estado original
+        para auditoria e reprocessamento.
+    </p>
+</div>
+
+<div class="section">
+    <h2>3. Camadas do Data Lake</h2>
+
+    <h3><span class="badge raw">🟦 RAW</span> Camada Bruta</h3>
+    <p><strong>Objetivo:</strong> Armazenar os dados exatamente como foram recebidos da fonte.</p>
+    <ul>
+        <li>Dados no formato original</li>
+        <li>Sem tratamento ou padronização</li>
+        <li>Pode conter erros, duplicidades e valores nulos</li>
+        <li>Usada para auditoria e reprocessamento</li>
+    </ul>
+    <p><strong>Boas práticas:</strong></p>
+    <ul>
+        <li>Particionamento por data de ingestão</li>
+        <li>Versionamento dos arquivos</li>
+        <li>Escrita append-only</li>
+    </ul>
+
+    <h3><span class="badge trusted">🟨 TRUSTED</span> Camada Confiável</h3>
+    <p><strong>Objetivo:</strong> Realizar limpeza, padronização e validações básicas de qualidade.</p>
+    <ul>
+        <li>Conversão de tipos (datas, numéricos, strings)</li>
+        <li>Padronização de formatos</li>
+        <li>Remoção de duplicidades</li>
+        <li>Tratamento de valores nulos</li>
+        <li>Criação de colunas técnicas (ex: SAFRA)</li>
+    </ul>
+    <p>
+        <strong>Resultado:</strong> Dados confiáveis para consumo analítico, mantendo
+        rastreabilidade com a RAW.
+    </p>
+
+    <h3><span class="badge refined">🟩 REFINED</span> Camada Analítica</h3>
+    <p><strong>Objetivo:</strong> Disponibilizar dados prontos para análise e modelagem.</p>
+    <ul>
+        <li>Dados agregados e enriquecidos</li>
+        <li>Regras de negócio aplicadas</li>
+        <li>Métricas consolidadas (U1M, U3M, U6M, U12M)</li>
+        <li>Estrutura orientada ao consumo</li>
+    </ul>
+
+    <p><strong>Consumidores:</strong></p>
+    <ul>
+        <li>Análise de Dados</li>
+        <li>Ciência de Dados</li>
+        <li>Dashboards</li>
+        <li>Modelos preditivos</li>
+    </ul>
+
+    <h3><span class="badge control">🟥 CONTROL</span> Camada de Controle e Qualidade</h3>
+    <p><strong>Objetivo:</strong> Garantir governança, monitoramento e qualidade dos dados.</p>
+    <ul>
+        <li>Métricas de qualidade (nulos, inválidos, duplicados)</li>
+        <li>Logs de execução</li>
+        <li>Auditoria de volumes</li>
+        <li>Status de pipelines</li>
+        <li>Indicadores de SLA</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>4. Orquestração e Fluxo de Dados</h2>
+    <ul>
+        <li>Sequenciamento das camadas (RAW → TRUSTED → REFINED)</li>
+        <li>Reexecuções automáticas</li>
+        <li>Tratamento de falhas</li>
+        <li>Dependências entre processos</li>
+    </ul>
+
+    <p><strong>Ferramentas típicas:</strong></p>
+    <ul>
+        <li>Data Flow</li>
+        <li>Jobs Spark</li>
+        <li>Workflows agendados</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>5. Serviços de Suporte e Governança</h2>
+
+    <h3>🔐 Key Vault</h3>
+    <ul>
+        <li>Armazenamento seguro de credenciais</li>
+        <li>Tokens de API</li>
+        <li>Chaves de acesso</li>
+        <li>Segredos sensíveis</li>
+    </ul>
+
+    <h3>👤 IAM (Identity and Access Management)</h3>
+    <ul>
+        <li>Controle de acesso por usuários e grupos</li>
+        <li>Permissões por camada</li>
+        <li>Princípio do menor privilégio</li>
+    </ul>
+
+    <h3>⚙️ Functions</h3>
+    <ul>
+        <li>Processamentos event-driven</li>
+        <li>Validações automáticas</li>
+        <li>Envio de alertas</li>
+        <li>Integrações auxiliares</li>
+    </ul>
+
+    <h3>🔔 Notifications</h3>
+    <ul>
+        <li>Alertas de falha</li>
+        <li>Notificações de sucesso</li>
+        <li>Avisos de quebra de SLA</li>
+        <li>Comunicação com times de dados</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>6. Consumo de Dados</h2>
+
+    <h3>📊 Análise de Dados</h3>
+    <ul>
+        <li>Exploração dos dados</li>
+        <li>Geração de insights</li>
+        <li>Relatórios e dashboards</li>
+        <li>Análises descritivas e diagnósticas</li>
+    </ul>
+
+    <h3>🤖 Ciência de Dados</h3>
+    <ul>
+        <li>Feature engineering</li>
+        <li>Treinamento de modelos</li>
+        <li>Análises preditivas</li>
+        <li>Modelos de churn, risco ou comportamento</li>
+    </ul>
+
+    <p>
+        Os dados consumidos vêm prioritariamente da camada <strong>REFINED</strong>,
+        garantindo qualidade e consistência.
+    </p>
+</div>
+
+<div class="section">
+    <h2>7. Benefícios da Arquitetura</h2>
+    <ul>
+        <li>Separação clara de responsabilidades</li>
+        <li>Alta escalabilidade</li>
+        <li>Governança e auditoria nativas</li>
+        <li>Facilidade para análises e ML</li>
+        <li>Redução de retrabalho</li>
+        <li>Aderência a boas práticas de mercado</li>
+    </ul>
+</div>
+
+<footer>
+    © 2026 • Hachathon 2025 PoD Academy squad01 • OCI Data Lake
+</footer>
+
+</body>
+</html>
