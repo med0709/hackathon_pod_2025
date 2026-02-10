@@ -71,11 +71,14 @@ hackathon_pod_2025/
 │   ├── book_01.ipynb
 │   ├── book_02.ipynb
 │   └── book_03.ipynb
+│   └── book_04.ipynb
+│   └── Book_Pagamento_05.ipynb
+│   └── book_atraso_06.py
 │
 ├── data_notebooks/
 │   └── exploratory/
 │   └── processed/
-│       ├── silver-colab/
+│       ├── local_test/
 │       └── trusted/
 │
 ├── src/pipeline/
