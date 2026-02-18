@@ -12,7 +12,7 @@ Original file is located at
 ## Bloco de codigo para instalar versao especifica dos pacotes
 #!pip install pyspark
 
-#from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession
 
 spark = SparkSession.builder \
     .appName("Trusted_base_atraso") \
@@ -21,7 +21,7 @@ spark = SparkSession.builder \
 """# Importando bibliotecas"""
 
 import os
-import pytz
+#import pytz
 import datetime
 from datetime import datetime
 
@@ -33,8 +33,9 @@ def log():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S') + " >>>"
 
 # Timestamp de processamento (com hora/minuto/segundo)
-agora = datetime.now(pytz.timezone('America/Sao_Paulo'))
-dthproc = agora.strftime("%Y%m%d%H%M%S")
+#agora = datetime.now(pytz.timezone('America/Sao_Paulo'))
+#dthproc = agora.strftime("%Y%m%d%H%M%S")
+dthproc = datetime.now().strftime("%Y%m%d%H%M%S")
 
 # Data da execução (AAAAmmdd)
 PROCESS_DATE = datetime.now().strftime("%Y%m%d")
@@ -44,9 +45,14 @@ REF_PERIOD = datetime.now().strftime("%Y%m")
 
 # Buckets e nomes de saída
 bucket_base = "base_atraso"
-bucket_trusted = f"s3://hackathon_2025/{PROCESS_DATE}/0003_trusted/"
-bucket_raw = f"s3://hackathon_2025/{PROCESS_DATE}/0002_raw/"
-bucket_control = f"s3://hackathon_2025/{PROCESS_DATE}/0005_control/"
+#nuvem = "oci://"
+namespace = "@grxzqsiaote6/"
+pasta = 'book_atraso/'
+
+bucket_raw_dim = f"oci://RAW{namespace}{pasta}BI_DIM_TIPO_FATURAMENTO.csv"
+bucket_raw = f"oci://RAW{namespace}{pasta}dados_faturamento/"
+bucket_trusted = f"oci://TRUSTED{namespace}{pasta}"
+bucket_control = f"oci://CONTROL{namespace}{pasta}"
 output_trusted = f"trusted_{bucket_base}"
 
 # Prints para conferência
@@ -59,26 +65,25 @@ output_trusted = f"trusted_{bucket_base}"
 
 """#  Leitura da camada Raw"""
 
-path_raw = os.path.join(bucket_raw, bucket_base)
+path_raw = bucket_raw
 
-parquet_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.parquet')]
-df_raw_atraso= spark.read.parquet(*parquet_files, header=True, inferSchema=True)
+df_raw_atraso = spark.read.parquet(path_raw)
 df_raw_atraso.createOrReplaceTempView("raw_base_atraso")
 
-print(log(), "Registros na Raw:", df_raw_atraso.count())
-df_raw_atraso.show(5, truncate=False)
+#print(log(), "Registros na Raw:", df_raw_atraso.count())
+#df_raw_atraso.show(5, truncate=False)
 #df_raw_atraso.printSchema()
 
 #csv_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.csv')]
 #df_dim_atraso = spark.read.csv(*csv_files, header=True, inferSchema=True, sep=',')
 
-csv_files = os.path.join(path_raw, "BI_DIM_TIPO_FATURAMENTO.csv") 
+csv_files = bucket_raw_dim
 df_dim_atraso = spark.read.csv(csv_files, header=True, inferSchema=True, sep=',')
 
 df_dim_atraso.createOrReplaceTempView("df_tipo_faturamento")
 
-print(log(), "Registros na Raw:", df_dim_atraso.count())
-df_dim_atraso.show(5, truncate=False)
+#print(log(), "Registros na Raw:", df_dim_atraso.count())
+#df_dim_atraso.show(5, truncate=False)
 
 #print(log(), "Registros na Raw:", df_raw_atraso.count())
 #df_raw_atraso.show(5, truncate=False)
@@ -212,7 +217,7 @@ from lake_atraso_refined
 
 """# Controle de processamento"""
 
-path_control = os.path.join(bucket_control, f'tb_controle_processamento_{bucket_base}_trusted')
+path_control = os.path.join(bucket_control, f'tb_controle_processamento_{output_trusted}_{PROCESS_DATE}')
 #print("Control path:", path_control)
 
 df_controle.write \
