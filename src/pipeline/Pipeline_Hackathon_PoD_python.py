@@ -13,9 +13,6 @@ from google.colab import drive
 drive.mount('/content/gdrive')
 
 from pyspark.sql import SparkSession
-import os
-import pytz
-from datetime import datetime
 
 spark = SparkSession.builder.appName("tabelas").getOrCreate()
 
@@ -28,7 +25,7 @@ spark
 
 import os
 import sys
-import pytz
+#import pytz
 import numpy as np
 import datetime
 from pyspark.sql import SparkSession

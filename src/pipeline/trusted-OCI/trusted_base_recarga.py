@@ -32,7 +32,7 @@ from datetime import datetime
 def log():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S') + " >>>"
 
-# Timestamp de processamento (com hora/minuto/segundo)
+#Timestamp de processamento (com hora/minuto/segundo)
 #agora = datetime.now(pytz.timezone('America/Sao_Paulo'))
 #dthproc = agora.strftime("%Y%m%d%H%M%S")
 dthproc = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -49,7 +49,7 @@ bucket_base = "base_recarga"
 namespace = "@grxzqsiaote6/"
 pasta = 'bases_recarga/'
 
-bucket_raw_dim = f"oci://RAW{namespace}{pasta}/"
+bucket_raw_dim = f"oci://RAW{namespace}{pasta}"
 bucket_raw = f"oci://RAW{namespace}{pasta}BI_FP_ASS_RECARGA_CMV_NOVA/"
 bucket_trusted = f"oci://TRUSTED{namespace}{pasta}"
 bucket_control = f"oci://CONTROL{namespace}{pasta}"
@@ -64,11 +64,12 @@ output_trusted = f"trusted_{bucket_base}"
 #print("bucket_control:", bucket_control)
 
 """#  Leitura da camada Raw"""
-
 path_raw = bucket_raw
 
-parquet_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.parquet')]
-df_raw_recarga= spark.read.parquet(*parquet_files, header=True, inferSchema=True)
+#parquet_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.parquet')]
+#df_raw_recarga= spark.read.parquet(*parquet_files, header=True, inferSchema=True)
+
+df_raw_recarga= spark.read.parquet(path_raw)
 df_raw_recarga.createOrReplaceTempView("raw_base_recarga")
 
 #print(log(), "Registros na Raw:", df_raw_recarga.count())
@@ -77,16 +78,16 @@ df_raw_recarga.createOrReplaceTempView("raw_base_recarga")
 """### Montando as dimensões para enriquecer a base"""
 
 PATH_DIMENSOES_RECARGA = {
-    "CANAL_AQUISICAO": f"{path_raw}/BI_DIM_CANAL_AQUISICAO_CREDITO.csv",
-    "FORMA_PAGAMENTO": f"{path_raw}/BI_DIM_FORMA_PAGAMENTO.csv",
-    "INSTITUICAO": f"{path_raw}/BI_DIM_INSTITUICAO.csv",
-    "PLATAFORMA": f"{path_raw}/BI_DIM_PLATAFORMA.csv",
-    "PROMOCAO": f"{path_raw}/BI_DIM_PROMOCAO_CREDITO.csv",
-    "STATUS_PLATAFORMA": f"{path_raw}/BI_DIM_STATUS_PLATAFORMA.csv",
-    "TECNOLOGIA": f"{path_raw}/BI_DIM_TECNOLOGIA.csv",
-    "TIPO_CREDITO": f"{path_raw}/BI_DIM_TIPO_CREDITO.csv",
-    "TIPO_INSERCAO": f"{path_raw}/BI_DIM_TIPO_INSERCAO.csv",
-    "TIPO_RECARGA": f"{path_raw}/BI_DIM_TIPO_RECARGA.csv",
+    "CANAL_AQUISICAO": f"{bucket_raw_dim}BI_DIM_CANAL_AQUISICAO_CREDITO.csv",
+    "FORMA_PAGAMENTO": f"{bucket_raw_dim}BI_DIM_FORMA_PAGAMENTO.csv",
+    "INSTITUICAO": f"{bucket_raw_dim}BI_DIM_INSTITUICAO.csv",
+    "PLATAFORMA": f"{bucket_raw_dim}BI_DIM_PLATAFORMA.csv",
+    "PROMOCAO": f"{bucket_raw_dim}BI_DIM_PROMOCAO_CREDITO.csv",
+    "STATUS_PLATAFORMA": f"{bucket_raw_dim}BI_DIM_STATUS_PLATAFORMA.csv",
+    "TECNOLOGIA": f"{bucket_raw_dim}BI_DIM_TECNOLOGIA.csv",
+    "TIPO_CREDITO": f"{bucket_raw_dim}BI_DIM_TIPO_CREDITO.csv",
+    "TIPO_INSERCAO": f"{bucket_raw_dim}BI_DIM_TIPO_INSERCAO.csv",
+    "TIPO_RECARGA": f"{bucket_raw_dim}BI_DIM_TIPO_RECARGA.csv",
 }
 
 DIMENSOES_RECARGA = {
@@ -107,7 +108,7 @@ DIMENSOES_RECARGA = {
 dfs_dim_recarga = {}
 
 for nome_dim, arquivo in DIMENSOES_RECARGA.items():
-    path = f"{path_raw}/{arquivo}"
+    path = f"{bucket_raw_dim}/{arquivo}"
 
     dfs_dim_recarga[nome_dim] = (
         spark.read
@@ -129,11 +130,6 @@ df_TIPO_CREDITO           = dfs_dim_recarga["TIPO_CREDITO"]
 df_TIPO_INSERCAO          = dfs_dim_recarga["TIPO_INSERCAO"]
 df_TIPO_RECARGA           = dfs_dim_recarga["TIPO_RECARGA"]
 
-# optamos por não inserir as dimensões nessa camada,
-# para manter a granularidade e flexibilidade da base, 
-# e evitar possíveis problemas de atualização das dimensões.
-# As dimensões serão integradas em análises futuras na construção dos books
-# garantindo que a camada Trusted permaneça o mais fiel possível à fonte original.
 
 """# Processamento tipagem para camada Trusted"""
 
@@ -168,33 +164,299 @@ df_base_recarga = spark.sql(f"""
     FROM raw_base_recarga
 """)
 
-df_base_recarga.createOrReplaceTempView("lake_recarga")
-#df_base_recarga.cache()
+df_base_recarga.createOrReplaceTempView("df_base_recarga")
 
-#print(log(), "Registros Base:", df_base_recarga.count())
-#df_base_recarga.#printSchema()
+#total_recarga = df_base_recarga.count()
+#print(log(), "Registros Base:",total_recarga)
+#df_base_recarga.printSchema()
 #df_base_recarga.show(5, truncate=False)
 
-"""# Salvar na camada Trusted"""
+"""#Inserindo os dados das dimensões"""
+#DIM CANAL_AQUISICAO_CREDITO
+df_CANAL_AQUISICAO_CREDITO.createOrReplaceTempView("CANAL_AQUISICAO_CREDITO")
+df_base_recarga_canal = spark.sql("""
+    SELECT
+        f.*,
+        c.COD_CANAL_AQUISICAO AS CAN_COD_CANAL_AQUISICAO,
+        c.DSC_CANAL_AQUISICAO AS CAN_DSC_CANAL_AQUISICAO,
+        c.COD_SISTEMA_DW AS CAN_COD_SISTEMA_DW,
+        c.DAT_ATUALIZACAO_DW AS CAN_DAT_ATUALIZACAO_DW,
+        c.DAT_CRIACAO_DW AS CAN_DAT_CRIACAO_DW,
+        c.COD_CANAL_AQUISICAO_BI AS CAN_COD_CANAL_AQUISICAO_BI,
+        c.DSC_CANAL_AQUISICAO_BI AS CAN_DSC_CANAL_AQUISICAO_BI,
+        c.COD_AGENTE_CREDITO AS CAN_COD_AGENTE_CREDITO,
+        c.DAT_EXPIRACAO_DW AS CAN_DAT_EXPIRACAO_DW,
+        c.COD_TIPO_CREDITO AS CAN_COD_TIPO_CREDITO,
+        c.COD_TIPO_INSTITUICAO AS CAN_COD_TIPO_INSTITUICAO,
+        c.DSC_TIPO_INSTITUICAO AS CAN_DSC_TIPO_INSTITUICAO
+    FROM df_base_recarga f
+    LEFT JOIN CANAL_AQUISICAO_CREDITO c
+        ON f.COD_CANAL_AQUISICAO = c.COD_CANAL_AQUISICAO
+""")
 
+df_base_recarga_canal.createOrReplaceTempView("df_base_recarga_canal")
+#total_linhas = df_base_recarga_canal.count()
+#if (total_linhas == total_recarga):  #df_base_recarga_canal.count() == df_base_recarga.count()
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_canal.show(5)
+
+#DIM FORMA_PAGAMENTO
+df_FORMA_PAGAMENTO.createOrReplaceTempView("FORMA_PAGAMENTO")
+df_base_recarga_forma = spark.sql("""
+    SELECT
+        f.*,
+        fp.COD_FORMA_PAGAMENTO AS FP_COD_FORMA_PAGAMENTO,
+        fp.DSC_FORMA_PAGAMENTO AS FP_DSC_FORMA_PAGAMENTO,
+        fp.DAT_CRIACAO_DW AS FP_DAT_CRIACAO_DW,
+        fp.DAT_EXPIRACAO_DW AS FP_DAT_EXPIRACAO_DW
+    FROM df_base_recarga_canal f
+    LEFT JOIN FORMA_PAGAMENTO fp
+        ON f.DW_FORMA_PAGAMENTO = fp.DW_FORMA_PAGAMENTO
+""")
+
+df_base_recarga_forma.createOrReplaceTempView("df_base_recarga_forma")
+#total_linhas= df_base_recarga_forma.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_forma.show(5)
+
+#DIM INSTITUICAO
+df_INSTITUICAO.createOrReplaceTempView("INSTITUICAO")
+df_base_recarga_instituicao = spark.sql("""
+    SELECT
+        f.*,
+        i.COD_INSTITUICAO AS INS_COD_INSTITUICAO,
+        i.DSC_INSTITUICAO AS INS_DSC_INSTITUICAO,
+        i.COD_TIPO_INSTITUICAO AS INS_COD_TIPO_INSTITUICAO,
+        i.DSC_TIPO_INSTITUICAO AS INS_DSC_TIPO_INSTITUICAO,
+        i.COD_SISTEMA_DW AS INS_COD_SISTEMA_DW,
+        i.DAT_EXPIRACAO_DW AS INS_DAT_EXPIRACAO_DW,
+        i.DAT_CRIACAO_DW AS INS_DAT_CRIACAO_DW,
+        i.COD_AGENTE AS INS_COD_AGENTE
+    FROM df_base_recarga_forma f
+    LEFT JOIN INSTITUICAO i
+        ON f.DW_INSTITUICAO = i.DW_INSTITUICAO
+""")
+
+df_base_recarga_instituicao.createOrReplaceTempView("df_base_recarga_instituicao")
+#total_linhas = df_base_recarga_instituicao.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_instituicao.show(5)
+
+#DIM PLANO_PRECO
+df_PLANO_PRECO.createOrReplaceTempView("PLANO_PRECO")
+df_base_recarga_plano = spark.sql("""
+    SELECT
+        f.*,
+        pp.DW_PLANO AS PP_DW_PLANO,
+        pp.COD_PLANO_PRECO AS PP_COD_PLANO_PRECO,
+        pp.DSC_PLANO_PRECO AS PP_DSC_PLANO_PRECO,
+        pp.COD_TIPO_CLIENTE AS PP_COD_TIPO_CLIENTE,
+        pp.COD_SUB_TIPO_CLIENTE AS PP_COD_SUB_TIPO_CLIENTE,
+        pp.DW_TIPO_CLIENTE AS PP_DW_TIPO_CLIENTE,
+        pp.DAT_EFETIVACAO AS PP_DAT_EFETIVACAO,
+        pp.DAT_EXPIRACAO AS PP_DAT_EXPIRACAO,
+        pp.DSC_PLANO_PRECO_BI AS PP_DSC_PLANO_PRECO_BI,
+        pp.DSC_GRUPO_PLANO_BI AS PP_DSC_GRUPO_PLANO_BI,
+        pp.DSC_TIPO_PLANO_BI AS PP_DSC_TIPO_PLANO_BI,
+        pp.IND_AMDOCS_PLAT_PRE AS PP_IND_AMDOCS_PLAT_PRE,
+        pp.COD_TRATAMENTO_ESPECIAL AS PP_COD_TRATAMENTO_ESPECIAL,
+        pp.COD_SISTEMA_DW AS PP_COD_SISTEMA_DW,
+        pp.COD_TECNOLOGIA_DW AS PP_COD_TECNOLOGIA_DW,
+        pp.DAT_EXPIRACAO_DW AS PP_DAT_EXPIRACAO_DW,
+        pp.DAT_ATUALIZACAO_DW AS PP_DAT_ATUALIZACAO_DW,
+        pp.DAT_CRIACAO_DW AS PP_DAT_CRIACAO_DW,
+        pp.NUM_FRANQUIA_MINUTOS_BI AS PP_NUM_FRANQUIA_MINUTOS_BI,
+        pp.NUM_FRANQUIA_REAIS_BI AS PP_NUM_FRANQUIA_REAIS_BI,
+        pp.NUM_FRANQUIA_EVENTOS_BI AS PP_NUM_FRANQUIA_EVENTOS_BI,
+        pp.NUM_FRANQUIA_VOLUME_BI AS PP_NUM_FRANQUIA_VOLUME_BI,
+        pp.COD_PLANO_COMPONENTE AS PP_COD_PLANO_COMPONENTE,
+        pp.DSC_PLANO_PRECO_UNICO_BI AS PP_DSC_PLANO_PRECO_UNICO_BI,
+        pp.DSC_MODALIDADE_PLANO AS PP_DSC_MODALIDADE_PLANO
+    FROM df_base_recarga_instituicao f
+    LEFT JOIN PLANO_PRECO pp
+        ON CAST(f.DW_PLANO_TARIFACAO AS STRING) = CAST(pp.COD_PLANO_PRECO AS STRING)
+""")
+
+df_base_recarga_plano.createOrReplaceTempView("df_base_recarga_plano")
+#total_linhas = df_base_recarga_plano.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_plano.show(5)
+
+#DIM STATUS_PLATAFORMA
+df_STATUS_PLATAFORMA.createOrReplaceTempView("STATUS_PLATAFORMA")
+df_base_plataforma = spark.sql("""
+    SELECT
+        f.*,
+        sp.DSC_STATUS_PLATAFORMA AS SP_DSC_STATUS_PLATAFORMA,
+        sp.IND_ATIVO AS SP_IND_ATIVO,
+        sp.DAT_ATUALIZACAO_DW AS SP_DAT_ATUALIZACAO_DW,
+        sp.DAT_CRIACAO_DW AS SP_DAT_CRIACAO_DW,
+        sp.COD_STATUS_PLAT_GRP AS SP_COD_STATUS_PLAT_GRP,
+        sp.IND_STS_PLAT_GRP_ATIVO AS SP_IND_STS_PLAT_GRP_ATIVO
+    FROM df_base_recarga_plano f
+    LEFT JOIN STATUS_PLATAFORMA sp
+        ON f.COD_STATUS_PLATAFORMA = sp.COD_STATUS_PLATAFORMA
+""")
+
+df_base_plataforma.createOrReplaceTempView("df_base_plataforma")
+#total_linhas = df_base_plataforma.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_plataforma.show(5)
+
+#DIM PROMOCAO
+df_PROMOCAO_CREDITO.createOrReplaceTempView("PROMOCAO_CREDITO")
+df_base_recarga_promocao = spark.sql("""
+    SELECT
+        f.*,
+        pr.DSC_PROMOCAO AS PR_DSC_PROMOCAO,
+        pr.DAT_EXPIRACAO_DW AS PR_DAT_EXPIRACAO_DW,
+        pr.DAT_ATUALIZACAO_DW AS PR_DAT_ATUALIZACAO_DW,
+        pr.DAT_CRIACAO_DW AS PR_DAT_CRIACAO_DW,
+        pr.COD_PROM_GRUPO_CARTAO AS PR_COD_PROM_GRUPO_CARTAO,
+        pr.DSC_NOME_PROMOCAO AS PR_DSC_NOME_PROMOCAO,
+        pr.COD_TIPO_PROMOCAO AS PR_COD_TIPO_PROMOCAO,
+        pr.DAT_INICIO_VIGENCIA AS PR_DAT_INICIO_VIGENCIA,
+        pr.DAT_FIM_VIGENCIA AS PR_DAT_FIM_VIGENCIA,
+        pr.VAL_PROMOCAO AS PR_VAL_PROMOCAO,
+        pr.NUM_CONTA_DEDICADA AS PR_NUM_CONTA_DEDICADA
+    FROM df_base_plataforma f
+    LEFT JOIN PROMOCAO_CREDITO pr
+        ON f.COD_PROMOCAO = pr.COD_PROMOCAO
+""")
+
+df_base_recarga_promocao.createOrReplaceTempView("df_base_recarga_promocao")
+#total_linhas = df_base_recarga_promocao.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_promocao.show(5)
+
+#DIM TECNOLOGIA
+df_TECNOLOGIA.createOrReplaceTempView("TECNOLOGIA")
+df_base_recarga_tecnologia = spark.sql("""
+    SELECT
+        f.*,
+        t.DSC_TECNOLOGIA AS TEC_DSC_TECNOLOGIA,
+        t.DAT_ATUALIZACAO_DW AS TEC_DAT_ATUALIZACAO_DW,
+        t.DAT_CRIACAO_DW AS TEC_DAT_CRIACAO_DW,
+        t.COD_TECNOLOGIA_SVA AS TEC_COD_TECNOLOGIA_SVA
+    FROM df_base_recarga_promocao f
+    LEFT JOIN TECNOLOGIA t
+        ON CAST(f.COD_TECNOLOGIA_DW AS STRING) = CAST(t.COD_TECNOLOGIA_DW AS STRING)
+""")
+
+df_base_recarga_tecnologia.createOrReplaceTempView("df_base_recarga_tecnologia")
+#total_linhas = df_base_recarga_tecnologia.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_tecnologia.show(5)
+
+#DIM TIPO_CREDITO
+df_TIPO_CREDITO.createOrReplaceTempView("TIPO_CREDITO")
+# Perform the join using the renamed fact column
+df_base_recarga_tipocredito = spark.sql("""
+    SELECT
+        f.*,
+        tc.COD_TIPO_CREDITO AS TPC_COD_TIPO_CREDITO,
+        tc.DSC_TIPO_CREDITO AS TPC_DSC_TIPO_CREDITO,
+        tc.DAT_EXPIRACAO_DW AS TPC_DAT_EXPIRACAO_DW,
+        tc.DAT_ATUALIZACAO_DW AS TPC_DAT_ATUALIZACAO_DW,
+        tc.DAT_CRIACAO_DW AS TPC_DAT_CRIACAO_DW
+    FROM df_base_recarga_tecnologia f
+    LEFT JOIN TIPO_CREDITO tc
+        ON f.COD_TIPO_CREDITO = tc.COD_TIPO_CREDITO
+""")
+
+df_base_recarga_tipocredito.createOrReplaceTempView("df_base_recarga_tipocredito")
+#total_linhas = df_base_recarga_tipocredito.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_tipocredito.show(5)
+
+#DIM TIPO_INSERCAO
+df_TIPO_INSERCAO.createOrReplaceTempView("TIPO_INSERCAO")
+df_base_recarga_tipoinsercao = spark.sql("""
+       SELECT
+        f.*,
+        -- colunas da dimensão TIPO_INSERCAO com prefixo TPI_
+        ti.DW_TIPO_INSERCAO  AS TPI_DW_TIPO_INSERCAO,
+        ti.DSC_TIPO_INSERCAO AS TPI_DSC_TIPO_INSERCAO,
+        ti.DAT_EXPIRACAO_DW  AS TPI_DAT_EXPIRACAO_DW,
+        ti.DAT_CRIACAO_DW    AS TPI_DAT_CRIACAO_DW
+    FROM df_base_recarga_tipocredito f
+    LEFT JOIN TIPO_INSERCAO ti
+        ON f.DW_TIPO_INSERCAO = ti.DW_TIPO_INSERCAO
+""")
+
+df_base_recarga_tipoinsercao.createOrReplaceTempView("df_base_recarga_tipoinsercao")
+#total_linhas = df_base_recarga_tipoinsercao.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_base_recarga_tipoinsercao.show(5)
+
+#DIM TIPO_RECARGA
+df_TIPO_RECARGA.createOrReplaceTempView("TIPO_RECARGA")
+
+df_bases_recarga_tiporecarga = spark.sql("""
+       SELECT
+        f.*,
+        -- colunas da dimensão TIPO_RECARGA com prefixo TR_
+        tr.DW_TIPO_RECARGA  AS TR_DW_TIPO_RECARGA,
+        tr.DSC_TIPO_RECARGA AS TR_DSC_TIPO_RECARGA,
+        tr.DAT_EXPIRACAO_DW AS TR_DAT_EXPIRACAO_DW,
+        tr.DAT_CRIACAO_DW   AS TR_DAT_CRIACAO_DW
+    FROM df_base_recarga_tipoinsercao f
+    LEFT JOIN TIPO_RECARGA tr
+        ON f.DW_TIPO_RECARGA = tr.DW_TIPO_RECARGA
+""")
+
+df_bases_recarga_tiporecarga.createOrReplaceTempView("df_bases_recarga_tiporecarga")
+#total_linhas = df_bases_recarga_tiporecarga.count()
+
+#if (total_linhas == total_recarga):
+#    print(log(), "Join valido Registros Base:", total_linhas)
+#    df_bases_recarga_tiporecarga.show(5)
+
+# criando coluna SAFRA
+df_bases_recarga = spark.sql("""
+SELECT
+    trunc(to_timestamp(f.DAT_INSERCAO_CREDITO, 'ddMMMyyyy:HH:mm:ss'),'MM') AS SAFRA,
+    f.*
+FROM df_bases_recarga_tiporecarga f
+""")
+#df_bases_recarga.show(6)
+
+df_bases_recarga.createOrReplaceTempView("df_bases_recarga")
+
+"""# Salvar na camada Trusted"""
 path_trusted = bucket_trusted
 #print("Trusted path:", path_trusted)
 
-df_base_recarga.write \
-    .partitionBy("ts_proc_partition") \
+df_bases_recarga.write \
+    .partitionBy("SAFRA","ts_proc_partition") \
     .mode("overwrite") \
     .option("compression", "snappy") \
     .parquet(path_trusted)
 
 """# Controle de carga"""
-
 df_controle = spark.sql (f"""
 SELECT
     '{output_trusted}' AS name_file,
     ts_proc,
     ts_proc_partition,
     count(*) as qtd_registros
-from lake_recarga
+from df_bases_recarga
     GROUP BY 1,2,3
 """)
 

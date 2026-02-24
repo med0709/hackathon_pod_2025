@@ -113,19 +113,19 @@ SELECT
     CAST(DW_TIPO_FATURAMENTO AS INT)                             AS DW_TIPO_FATURAMENTO,
     CAST(COD_PLATAFORMA AS STRING)                               AS COD_PLATAFORMA,
 
-    TO_DATE(DAT_CRIACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss')    AS DAT_CRIACAO_REGISTRO_TRANS,
-    TO_CHAR(TO_TIMESTAMP(DAT_CRIACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')    AS HR_CRIACAO_REGISTRO_TRANS,
-    TO_DATE(DAT_ALTERACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss')                           AS DAT_ALTERACAO_REGISTRO_TRANS,
-    TO_CHAR(TO_TIMESTAMP(DAT_ALTERACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')  AS HR_ALTERACAO_REGISTRO_TRANS,
+    to_date(to_timestamp(DAT_CRIACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss')) AS DAT_CRIACAO_REGISTRO_TRANS,
+    date_format(to_timestamp(DAT_CRIACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_REGISTRO_TRANS,
+    to_date(to_timestamp(DAT_ALTERACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss')) AS DAT_ALTERACAO_REGISTRO_TRANS,
+    date_format(to_timestamp(DAT_ALTERACAO_REGISTRO_TRANS, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_ALTERACAO_REGISTRO_TRANS,
     TO_DATE(DAT_CANCELAMENTO_FAT, 'ddMMMyyyy:HH:mm:ss')         AS DAT_CANCELAMENTO_FAT,
     TO_DATE(DAT_ORIGINAL_VCTO_FAT,'ddMMMyyyy:HH:mm:ss')         AS DAT_ORIGINAL_VCTO_FAT,
     TO_DATE(DAT_ALTERACAO_VCTO_FAT,'ddMMMyyyy:HH:mm:ss')        AS DAT_ALTERACAO_VCTO_FAT,
     TO_DATE(DAT_CRIACAO_FAT,'ddMMMyyyy:HH:mm:ss')               AS DAT_CRIACAO_FAT,
     TO_DATE(DAT_VENCIMENTO_FAT,'ddMMMyyyy:HH:mm:ss')            AS DAT_VENCIMENTO_FAT,
-    TO_DATE(DAT_STATUS_FAT,'ddMMMyyyy:HH:mm:ss')                AS DAT_STATUS_FAT,
-    TO_CHAR(TO_TIMESTAMP(DAT_STATUS_FAT,'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')                AS HR_STATUS_FAT,
-    TO_DATE(DAT_MIN_VENCIMENTO_FAT,'ddMMMyyyy:HH:mm:ss')                                 AS DAT_MIN_VENCIMENTO_FAT,
-    TO_CHAR(TO_TIMESTAMP(DAT_MIN_VENCIMENTO_FAT,'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')        AS HR_MIN_VENCIMENTO_FAT,
+    to_date(to_timestamp(DAT_STATUS_FAT, 'ddMMMyyyy:HH:mm:ss')) AS DAT_STATUS_FAT,
+    date_format(to_timestamp(DAT_STATUS_FAT, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_STATUS_FAT,
+    to_date(to_timestamp(DAT_MIN_VENCIMENTO_FAT, 'ddMMMyyyy:HH:mm:ss')) AS DAT_MIN_VENCIMENTO_FAT,
+    date_format(to_timestamp(DAT_MIN_VENCIMENTO_FAT, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_MIN_VENCIMENTO_FAT,
 
     CAST(NUM_BILL_SEQ_FAT AS INT)                                AS NUM_BILL_SEQ_FAT,
     CAST(NUM_SEQ_ACORDO_FAT AS INT)                              AS NUM_SEQ_ACORDO_FAT,
@@ -147,14 +147,14 @@ SELECT
     CAST(VAL_FAT_ABERTO AS DECIMAL(18,2))                        AS VAL_FAT_ABERTO,
     CAST(VAL_FAT_ABERTO_LIQ AS DECIMAL(18,2))                    AS VAL_FAT_ABERTO_LIQ,
     CAST(VAL_MULTA_JUROS AS DECIMAL(18,2))                       AS VAL_MULTA_JUROS,
-    CAST(VAL_MULTA_CANCELAMENTO AS DECIMAL(18,2))               AS VAL_MULTA_CANCELAMENTO,
+    CAST(VAL_MULTA_CANCELAMENTO AS DECIMAL(18,2))                AS VAL_MULTA_CANCELAMENTO,
     CAST(VAL_PARC_APARELHO_LIQ AS DECIMAL(18,2))                 AS VAL_PARC_APARELHO_LIQ,
     CAST(VAL_FAT_LIQ_JM_MC AS DECIMAL(18,2))                     AS VAL_FAT_LIQ_JM_MC,
 
-    TO_DATE(DAT_ATIVACAO_CONTA_CLI,'ddMMMyyyy:HH:mm:ss')    AS DAT_ATIVACAO_CONTA_CLI,
-    TO_CHAR(TO_TIMESTAMP(DAT_ATIVACAO_CONTA_CLI,'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')    AS HR_ATIVACAO_CONTA_CLI,
-    TO_DATE(DAT_CRIACAO_DW,'ddMMMyyyy:HH:mm:ss')            AS DAT_CRIACAO_DW,
-    TO_CHAR(TO_TIMESTAMP(DAT_CRIACAO_DW,'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')            AS HR_CRIACAO_DW
+    to_date(to_timestamp(DAT_ATIVACAO_CONTA_CLI, 'ddMMMyyyy:HH:mm:ss')) AS DAT_ATIVACAO_CONTA_CLI,
+    date_format(to_timestamp(DAT_ATIVACAO_CONTA_CLI, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_ATIVACAO_CONTA_CLI,
+    to_date(to_timestamp(DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss')) AS DAT_CRIACAO_DW,
+    date_format(to_timestamp(DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_DW
 FROM raw_base_atraso
 """)
 df_trusted_atraso.createOrReplaceTempView("trusted_base_atraso")
@@ -169,13 +169,13 @@ df_trusted_atraso.createOrReplaceTempView("trusted_base_atraso")
 df_trusted_atraso_refined = spark.sql("""
 SELECT
     at.*,
-    CAST(tf.DW_TIPO_FATURAMENTO AS STRING) AS DW_TIPO_FATURAMENTO,
+    CAST(tf.DW_TIPO_FATURAMENTO AS STRING) AS DIM_TIPO_FATURAMENTO,
     CAST(tf.DSC_TIPO_FATURAMENTO AS STRING) AS DSC_TIPO_FATURAMENTO,
     CAST(tf.COD_TIPO_FATURAMENTO AS STRING) AS COD_TIPO_FATURAMENTO,
-    TO_DATE(tf.DAT_EXPIRACAO_DW, 'ddMMMyyyy:HH:mm:ss') AS DIM_DAT_EXPIRACAO_DW,                              -- Renaming to avoid conflict
-    TO_CHAR(TO_TIMESTAMP(tf.DAT_EXPIRACAO_DW, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_DIM_DAT_EXPIRACAO_DW,  -- New column for time component
-    TO_DATE(tf.DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss') AS DIM_DAT_CRIACAO_DW,                                  -- Renaming to avoid conflict
-    TO_CHAR(TO_TIMESTAMP(tf.DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_DIM_DAT_CRIACAO_DW,      -- New column for time component
+    to_date(to_timestamp(tf.DAT_EXPIRACAO_DW, 'ddMMMyyyy:HH:mm:ss')) AS DIM_DAT_EXPIRACAO_DW,                              -- Renaming to avoid conflict
+    date_format(to_timestamp(tf.DAT_EXPIRACAO_DW, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_DIM_DAT_EXPIRACAO_DW,  -- New column for time component
+    to_date(to_timestamp(tf.DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss')) AS DIM_DAT_CRIACAO_DW,                                  -- Renaming to avoid conflict
+    date_format(to_timestamp(tf.DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_DIM_DAT_CRIACAO_DW,      -- New column for time component
     CAST(tf.DSC_TIPO_FATURAMENTO_ABREV AS STRING) AS DSC_TIPO_FATURAMENTO_ABREV
 FROM trusted_base_atraso at
 LEFT JOIN df_tipo_faturamento tf

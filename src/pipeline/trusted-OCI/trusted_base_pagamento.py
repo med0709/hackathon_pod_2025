@@ -53,6 +53,14 @@ bucket_trusted = f"oci://TRUSTED{namespace}{pasta}"
 bucket_control = f"oci://CONTROL{namespace}{pasta}"
 output_trusted = f"trusted_{bucket_base}"
 
+pasta = 'book_pagamento/dados_pagamento/'
+
+#bucket = "Data-base"
+
+#bucket_raw = f"oci://{bucket}{namespace}RAW/{pasta}"
+#bucket_trusted = f"oci://{bucket}{namespace}TRUSTED/{pasta}"
+#bucket_control = f"oci://{bucket}{namespace}CONTROL/{pasta}"
+
 # Prints para conferência
 #print("PROCESS_DATE:", PROCESS_DATE)
 #print("REF_PERIOD:", REF_PERIOD)
@@ -63,12 +71,11 @@ output_trusted = f"trusted_{bucket_base}"
 
 """# Leitura dos dados na camada Raw"""
 
-path_raw = bucket_raw
-
 #parquet_files = [path_raw for f in os.listdir(bucket_raw) if f.endswith('.parquet')]
 #df_raw_pagamento= spark.read.parquet(*parquet_files, header=True, inferSchema=True)
 
-#oci://RAW@grxzqsiaote6/book_pagamento/dados_pagamento/*.parquet
+#path_raw = "oci://RAW@grxzqsiaote6/book_pagamento/dados_pagamento/"
+path_raw = bucket_raw
 df_raw_pagamento = spark.read.parquet(path_raw)
 
 df_raw_pagamento.createOrReplaceTempView("raw_base_pagamento")
@@ -95,8 +102,8 @@ CAST(DW_AREA AS INT) AS DW_AREA,
 CAST(DW_UN_NEGOCIO AS INT) AS DW_UN_NEGOCIO,
 CAST(DW_FORMA_PAGAMENTO AS INT) AS DW_FORMA_PAGAMENTO,
 CAST(VAL_PAGAMENTO_FATURA AS FLOAT) AS VAL_PAGAMENTO_FATURA,
-TO_DATE(DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss') AS DAT_CRIACAO_DW,
-TO_CHAR(TO_TIMESTAMP(DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_DW,
+to_date(to_timestamp(DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss')) AS DAT_CRIACAO_DW,
+date_format(to_timestamp(DAT_CRIACAO_DW, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_DW,
 CAST(DW_BANCO AS STRING) AS DW_BANCO,
 CAST(DW_TIPO_PAGAMENTO AS STRING) AS DW_TIPO_PAGAMENTO,
 CAST(NUM_BANCO_PAGAMENTO AS STRING) AS NUM_BANCO_PAGAMENTO,
@@ -112,10 +119,10 @@ CAST(VAL_MULTA_FID_ITEM AS FLOAT) AS VAL_MULTA_FID_ITEM,
 CAST(COD_ORIGEM_NETUNO AS STRING) AS COD_ORIGEM_NETUNO,
 CAST(COD_CONTA_ATIVIDADE AS STRING) AS COD_CONTA_ATIVIDADE,
 CAST(SEQ_ENTIDADE_ATIVIDADE AS INT) AS SEQ_ENTIDADE_ATIVIDADE,
-TO_DATE(DAT_CRIACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss')                              AS DAT_CRIACAO_ATIVIDADE,
-TO_CHAR(TO_TIMESTAMP(DAT_CRIACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')     AS HR_CRIACAO_ATIVIDADE,
-TO_DATE(DAT_ATUALIZACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss')                          AS DAT_ATUALIZACAO_ATIVIDADE,
-TO_CHAR(TO_TIMESTAMP(DAT_ATUALIZACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_ATUALIZACAO_ATIVIDADE,
+to_date(to_timestamp(DAT_CRIACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss')) AS DAT_CRIACAO_ATIVIDADE,
+date_format(to_timestamp(DAT_CRIACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_ATIVIDADE,
+to_date(to_timestamp(DAT_ATUALIZACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss')) AS DAT_ATUALIZACAO_ATIVIDADE,
+date_format(to_timestamp(DAT_ATUALIZACAO_ATIVIDADE, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_ATUALIZACAO_ATIVIDADE,
 CAST(COD_LOGIN_OPERADOR_ATIVIDADE AS STRING) AS COD_LOGIN_OPERADOR_ATIVIDADE,
 CAST(COD_ATIVIDADE AS STRING) AS COD_ATIVIDADE,
 CAST(COD_RAZAO_ATIVIDADE AS STRING) AS COD_RAZAO_ATIVIDADE,
@@ -127,10 +134,10 @@ CAST(COD_BANCO_ATIVIDADE AS STRING) AS COD_BANCO_ATIVIDADE,
 CAST(NUM_CONTA_ATIVIDADE AS STRING) AS NUM_CONTA_ATIVIDADE,
 CAST(COD_AGENCIA_ATIVIDADE AS STRING) AS COD_AGENCIA_ATIVIDADE,
 CAST(SEQ_ENTIDADE_PAGAMENTO AS INT) AS SEQ_ENTIDADE_PAGAMENTO,
-TO_DATE(DAT_CRIACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss')                              AS DAT_CRIACAO_PAGAMENTO,
-TO_CHAR(TO_TIMESTAMP(DAT_CRIACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss')     AS HR_CRIACAO_PAGAMENTO,
-TO_DATE(DAT_ATUALIZACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss')                          AS DAT_ATUALIZACAO_PAGAMENTO,
-TO_CHAR(TO_TIMESTAMP(DAT_ATUALIZACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_ATUALIZACAO_PAGAMENTO,
+to_date(to_timestamp(DAT_CRIACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss')) AS DAT_CRIACAO_PAGAMENTO,
+date_format(to_timestamp(DAT_CRIACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_PAGAMENTO,
+to_date(to_timestamp(DAT_ATUALIZACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss')) AS DAT_ATUALIZACAO_PAGAMENTO,
+date_format(to_timestamp(DAT_ATUALIZACAO_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_ATUALIZACAO_PAGAMENTO,
 CAST(COD_LOGIN_PAGAMENTO AS STRING) AS COD_LOGIN_PAGAMENTO,
 CAST(COD_FORMA_PAGAMENTO AS STRING) AS COD_FORMA_PAGAMENTO,
 CAST(VAL_ORIGINAL_PAGAMENTO AS FLOAT) AS VAL_ORIGINAL_PAGAMENTO,
@@ -147,8 +154,8 @@ CAST(IND_STATUS_PAGAMENTO AS STRING) AS IND_STATUS_PAGAMENTO,
 TO_DATE(DAT_STATUS_PAGAMENTO, 'ddMMMyyyy:HH:mm:ss') AS DAT_STATUS_PAGAMENTO,
 CAST(COD_ARQUIVO_PAGAMENTO AS STRING) AS COD_ARQUIVO_PAGAMENTO,
 CAST(COD_NETUNO_PAGAMENTO AS STRING) AS COD_NETUNO_PAGAMENTO,
-TO_DATE(DAT_CRIACAO_CREDITO, 'ddMMMyyyy:HH:mm:ss')                          AS DAT_CRIACAO_CREDITO,
-TO_CHAR(TO_TIMESTAMP(DAT_CRIACAO_CREDITO, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_CREDITO,
+to_date(to_timestamp(DAT_CRIACAO_CREDITO, 'ddMMMyyyy:HH:mm:ss')) AS DAT_CRIACAO_CREDITO,
+date_format(to_timestamp(DAT_CRIACAO_CREDITO, 'ddMMMyyyy:HH:mm:ss'),'HH:mm:ss') AS HR_CRIACAO_CREDITO,
 TO_DATE(DAT_ATUALIZACAO_CREDITO, 'ddMMMyyyy:HH:mm:ss')                      AS DAT_ATUALIZACAO_CREDITO,
 CAST(COD_LOGIN_CREDITO AS STRING) AS COD_LOGIN_CREDITO,
 CAST(VAL_PAGAMENTO_CREDITO AS FLOAT) AS VAL_PAGAMENTO_CREDITO,
