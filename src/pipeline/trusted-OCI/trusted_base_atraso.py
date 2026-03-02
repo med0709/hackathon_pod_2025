@@ -192,7 +192,7 @@ df_trusted_atraso_refined.createOrReplaceTempView("lake_atraso_refined")
 
 """# Salvar na camada Trusted"""
 
-path_trusted = os.path.join(bucket_trusted, output_trusted)
+path_trusted = bucket_trusted
 #print("Trusted path:", path_trusted)
 
 df_trusted_atraso_refined.write \

@@ -116,6 +116,8 @@ for nome_dim, arquivo in DIMENSOES_RECARGA.items():
         .option("sep", ",")
         .option("inferSchema", True)
         .csv(path)
+        
+        #spark.read.csv(path, header=True, sep=",", inferSchema=True)
     )
 
 df_CANAL_AQUISICAO_CREDITO = dfs_dim_recarga["CANAL_AQUISICAO_CREDITO"]
