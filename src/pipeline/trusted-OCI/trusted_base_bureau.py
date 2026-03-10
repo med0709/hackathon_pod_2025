@@ -78,18 +78,18 @@ df_trusted = spark.sql(f"""
         '{dthproc}' AS ts_proc,
         '{dthproc}' AS ts_proc_partition,
         -- SAFRA convertida para DATE (primeiro dia do mês)
-        CAST(CONCAT(SUBSTRING(SAFRA, 1, 4), '-', SUBSTRING(SAFRA, 5, 2), '-01') AS DATE) AS SAFRA,
-
+        --CAST(CONCAT(SUBSTRING(SAFRA, 1, 4), '-', SUBSTRING(SAFRA, 5, 2), '-01') AS DATE) AS SAFRA,
+        CAST(SAFRA AS INT) AS SAFRA,
         -- Ano e Mês extraídos da SAFRA
         CAST(SUBSTRING(SAFRA, 1, 4) AS INT) AS Ano,
         CAST(SUBSTRING(SAFRA, 5, 2) AS INT) AS Mes,
 
-        CAST(FLAG_INSTALACAO AS BOOLEAN) AS IsInstallation,
+        CAST(FLAG_INSTALACAO AS BOOLEAN) AS FLAG_INSTALACAO,
         CAST(PROD AS STRING) AS ProductDescription,
         CAST(flag_mig2 AS STRING) AS ProductMigration,
-        CAST(SCORE_01 AS FLOAT) AS Score01,
-        CAST(SCORE_02 AS FLOAT) AS Score02,
-        CAST(FPD AS INT) AS FDP,
+        CAST(SCORE_01 AS FLOAT) AS SCORE_01,
+        CAST(SCORE_02 AS FLOAT) AS SCORE_02,
+        CAST(FPD AS INT) AS FPD,
         CAST(NUM_CPF AS STRING) AS NUM_CPF
     FROM raw_base_bureau
 """)

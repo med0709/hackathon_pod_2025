@@ -81,7 +81,7 @@ df_trusted_bureau = spark.sql(f"""
         CAST(flag_mig2 AS STRING) AS ProductMigration,
         CAST(SCORE_01 AS FLOAT) AS Score01,
         CAST(SCORE_02 AS FLOAT) AS Score02,
-        CAST(FPD AS INT) AS FDP,
+        CAST(FPD AS INT) AS FPD,
         CAST(NUM_CPF AS STRING) AS NUM_CPF
     FROM raw_base_bureau
 """)
@@ -99,7 +99,7 @@ df_trusted_bureau.createOrReplaceTempView("lake_base_bureau")
 #print("Trusted path:", path_trusted)
 
 df_trusted_bureau.write \
-    .partitionBy("SAFRA","ts_proc_partition") \
+    .partitionBy("ts_proc_partition","SAFRA") \
     .mode("overwrite") \
     .option("compression", "snappy") \
     .parquet(bucket_trusted_bureau)
@@ -178,7 +178,7 @@ bucket_trusted_telco
 #print("Trusted path:", bucket_trusted_telco)
 
 df_trusted_telco.write \
-    .partitionBy("SAFRA","ts_proc_partition") \
+    .partitionBy("ts_proc_partition","SAFRA") \
     .mode("overwrite") \
     .option("compression", "snappy") \
     .parquet(bucket_trusted_telco)
@@ -292,7 +292,7 @@ df_base_dados_cadastrais.createOrReplaceTempView("lake_dados_cadastrais")
 #print("Trusted path:", path_trusted)
 
 df_base_dados_cadastrais.write \
-    .partitionBy("SAFRA","ts_proc_partition") \
+    .partitionBy("ts_proc_partition","SAFRA") \
     .mode("overwrite") \
     .option("compression", "snappy") \
     .parquet(bucket_trusted_cadastro)
@@ -714,7 +714,7 @@ df_bases_recarga.createOrReplaceTempView("df_bases_recarga")
 #print("Trusted path:", bucket_trusted_recarga)
 
 df_bases_recarga.write \
-    .partitionBy("SAFRA","ts_proc_partition") \
+    .partitionBy("ts_proc_partition","SAFRA") \
     .mode("overwrite") \
     .option("compression", "snappy") \
     .parquet(bucket_trusted_recarga)

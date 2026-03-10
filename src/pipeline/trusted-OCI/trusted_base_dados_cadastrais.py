@@ -134,7 +134,7 @@ path_trusted = bucket_trusted
 #print("Trusted path:", path_trusted)
 
 df_base_dados_cadastrais.write \
-    .partitionBy("SAFRA","ts_proc_partition") \
+    .partitionBy("ts_proc_partition","SAFRA") \
     .mode("overwrite") \
     .option("compression", "snappy") \
     .parquet(path_trusted)
