@@ -1,9 +1,15 @@
 # Virtual Environment
 hacka_venv/
+.hacka_venv_prod/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
 venv/
 env/
 ENV/
 .venv/
+*.virtualenv
 
 # Python
 __pycache__/
@@ -31,8 +37,8 @@ share/python-wheels/
 MANIFEST
 
 # Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb_checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
 */.ipynb_checkpoints/*
 
 # PyCharm
@@ -44,6 +50,7 @@ MANIFEST
 # VS Code
 .vscode/
 *.code-workspace
+.history/
 
 # Environment variables
 .env
@@ -58,9 +65,30 @@ data/processed/*
 data/predictions/*
 !data/predictions/.gitkeep
 
+# Parquet files
+*.parquet
+*.parquet.gzip
+
+# CSV files (geralmente são dados)
+*.csv
+!*_sample.csv
+
+# Excel files
+*.xlsx
+*.xls
+
 # Models
 models/*
 !models/.gitkeep
+models/models/*
+!models/models/.gitkeep
+models/best_params/*
+!models/best_params/.gitkeep
+
+# Pickle files (modelos salvos)
+*.pkl
+*.pickle
+*.joblib
 
 # Reports
 reports/*
@@ -86,6 +114,7 @@ dmypy.json
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
@@ -102,9 +131,15 @@ logs/
 # Temporary files
 *.tmp
 *.bak
-*.swp
-*~
 
 # OS specific
 .AppleDouble
 .LSOverride
+
+# Jupyter Lab
+.jupyter/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3

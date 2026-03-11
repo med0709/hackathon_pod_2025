@@ -2,13 +2,10 @@ pandas
 numpy
 matplotlib
 seaborn
+pyarrow
 scikit-learn
 pycaret
-imbalanced-learn
+statsmodels
 xgboost
-lightgbm
 catboost
-ipykernel
-jupyter
-pyarrow
-fastparquet
+optuna
